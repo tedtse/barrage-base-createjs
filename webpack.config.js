@@ -8,7 +8,7 @@ module.exports = {
     loaders: [
       {
         test: /\.tpl$/,
-        loader: 'string'
+        loader: 'string-loader'
       },
       {
         test: /\.js$/,

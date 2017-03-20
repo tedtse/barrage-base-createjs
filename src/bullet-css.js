@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   '[role="bullet"]': {
   },
   '[role="hot-icon"]': {
@@ -21,6 +21,6 @@ export default {
     color: '#ffd38e'
   },
   '[role="new-comment"]': {
-    color: 'rgba(255,255,255,.75)'
+    color: 'rgba(255, 255, 255, .75)'
   }
-}
+};

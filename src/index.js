@@ -1,44 +1,44 @@
 import eventManager from './utils/event-manager'
 import loadJs from './utils/load-script'
-import { generateBullet } from './custom'
+import { generateBullet } from './compile/convert'
 import { setting, extendSetting } from './setting'
-import Stage from './createjs-element/Stage'
+import Stage from './elements/Stage'
 
 const SPEED = 12;
 var defaultPipeOpts = { height: 0, marginTop: 0, marginBottom: 0 };
 
 function watchPipeStatus (pipe, canvasWidth, frequence) {
-  let bullets = pipe.children
-  let result = true
+  let bullets = pipe.children;
+  let result = true;
   for (let i = bullets.length; i--;) {
-    let bullet = bullets[i]
+    let bullet = bullets[i];
     if ((canvasWidth - bullet.x - bullet.width) / canvasWidth <= frequence) {
-      result = false
-      pipe.status = 'block'
-      break
+      result = false;
+      pipe.status = 'block';
+      break;
     }
   }
   if (result) {
-    pipe.status = 'idle'
+    pipe.status = 'idle';
   }
 }
 
 // 子弹元素位置校正
 function horizontalCorrect (bullet, canvasWidth, delta) {
-  let width = bullet.width
-  let oldX = bullet.x
-  let newX = ~~(oldX * (width + canvasWidth) / (width + canvasWidth - delta))
-  let duration = ~~((bullet.width + newX) * SPEED)
+  let width = bullet.width;
+  let oldX = bullet.x;
+  let newX = ~~(oldX * (width + canvasWidth) / (width + canvasWidth - delta));
+  let duration = ~~((bullet.width + newX) * SPEED);
   return {
     x: newX,
     duration: duration
-  }
+  };
 }
 
 function generatePipes (opts) {
-  let result = []
+  let result = [];
   for (let i = 0; i < opts.number; i++) {
-    let pipe = new window.createjs.Container()
+    let pipe = new window.createjs.Container();
     pipe.set({
       id: i,
       name: 'pipe',
@@ -47,10 +47,10 @@ function generatePipes (opts) {
       height: opts.height,
       x: 0,
       y: i * opts.height + (i + 1) * opts.marginTop + (Math.max(0, (i - 1))) * opts.marginBottom
-    })
-    result.push(pipe)
+    });
+    result.push(pipe);
   }
-  return result
+  return result;
 }
 
 /**
@@ -81,13 +81,13 @@ class XlBarrage {
     this.stage = new Stage(setting.id);
     this.canvas = document.getElementById(setting.id);
     if (setting.auto) {
-      this.autoLaunch()
+      this.autoLaunch();
     }
     // 初始化pipes
-    let pipeOpts = Object.assign({ ...defaultPipeOpts, ...setting.pipeOpts, width: this.canvas.width })
-    let pipes = generatePipes(pipeOpts)
+    let pipeOpts = Object.assign({ ...defaultPipeOpts, ...setting.pipeOpts, width: this.canvas.width });
+    let pipes = generatePipes(pipeOpts);
     pipes.forEach((pipe) => {
-      this.stage.addChild(pipe)
+      this.stage.addChild(pipe);
     })
   }
   /**
@@ -96,23 +96,23 @@ class XlBarrage {
    */
   ready (callback) {
     if (window.createjs) {
-      this.initialize()
-      callback()
+      this.initialize();
+      callback();
     }
-    let relyOpts = setting.relyOpts
+    let relyOpts = setting.relyOpts;
     loadJs(relyOpts.easeljsPath)
       .then(null, () => {
-        throw Error('load the script easeljs failed!')
+        throw Error('load the script easeljs failed!');
       })
       .then(() => {
-        return loadJs(relyOpts.tweenjsPath)
+        return loadJs(relyOpts.tweenjsPath);
       })
       .then(null, () => {
-        throw Error('load the script tweenjs failed!')
+        throw Error('load the script tweenjs failed!');
       })
       .then(() => {
-        this.initialize()
-        callback()
+        this.initialize();
+        callback();
       })
   }
   /**
@@ -121,7 +121,7 @@ class XlBarrage {
    * @param {object} datas - 生成子弹实例的数据
    */
   fillBullets (datas) {
-    this.bullets = this.bullets.concat(datas)
+    this.bullets = this.bullets.concat(datas);
   }
   /**
    * 将子弹填充在弹夹的指定位置
@@ -130,7 +130,7 @@ class XlBarrage {
    * @param {object} data - 生成子弹实例的数据
    */
   fillBulletAt (index, data) {
-    this.bullets.splice(index, 0, data)
+    this.bullets.splice(index, 0, data);
   }
   /**
    * 重新填充子弹
@@ -138,20 +138,20 @@ class XlBarrage {
    * @param {object} datas - 生成子弹实例的数据
    */
   resetBullets (datas) {
-    this.clearBullets()
-    this.fillBullets(datas)
+    this.clearBullets();
+    this.fillBullets(datas);
   }
   /**
    * 清空弹夹
    * @method clearBullets
    */
   clearBullets () {
-    this.bullets.length = 0
+    this.bullets.length = 0;
     if (this.stage) {
-      let pipes = this.stage.children
+      let pipes = this.stage.children;
       pipes.forEach((pipe) => {
-        pipe.children.length = 0
-        pipe.status = 'idle'
+        pipe.children.length = 0;
+        pipe.status = 'idle';
       })
     }
   }
@@ -160,7 +160,7 @@ class XlBarrage {
    * @method getBulletsCount
    */
   getBulletsCount () {
-    return this.bullets.length
+    return this.bullets.length;
   }
   /**
    * 发射子弹
@@ -169,19 +169,19 @@ class XlBarrage {
    * @param {object} data - 要发射的子弹实例的数据
    */
   launch (data, pipe) {
-    let canvasWidth = this.canvas.width
+    let canvasWidth = this.canvas.width;
     generateBullet(canvasWidth, data)
       .then((bullet) => {
-        let duration = ~~((canvasWidth + bullet.width) * SPEED)
-        pipe.addChild(bullet)
-        pipe.status = 'block'
+        let duration = ~~((canvasWidth + bullet.width) * SPEED);
+        pipe.addChild(bullet);
+        pipe.status = 'block';
         window.createjs.Tween.get(bullet)
           .wait(~~(Math.random() * 1000))
           .to({x: -bullet.width}, duration)
           .call(() => {
-            pipe.removeChild(bullet)
+            pipe.removeChild(bullet);
           })
-        this.dispatch('barrage.bulletLaunch')
+        this.dispatch('barrage.bulletLaunch');
       })
   }
   /**
@@ -189,16 +189,16 @@ class XlBarrage {
    * @method autoLaunch
    */
   autoLaunch () {
-    let that = this
+    let that = this;
     window.createjs.Ticker.addEventListener('tick', () => {
       if (!that.canLaunch || !that.isLaunching || !that.bullets.length) {
-        return
+        return;
       }
-      let pipes = that.stage.children
+      let pipes = that.stage.children;
       pipes.forEach((pipe) => {
-        watchPipeStatus(pipe, that.canvas.width, setting.frequence)
+        watchPipeStatus(pipe, that.canvas.width, setting.frequence);
         if (pipe.status === 'idle' && that.bullets.length) {
-          that.launch(that.bullets.shift(), pipe)
+          that.launch(that.bullets.shift(), pipe);
         }
       })
     })
@@ -208,19 +208,19 @@ class XlBarrage {
    * @method goonLaunch
    */
   goonLaunch () {
-    this.isLaunching = true
+    this.isLaunching = true;
   }
   /**
    * 停止发射子弹
    * @method stopLaunch
    */
   stopLaunch () {
-    this.isLaunching = false
+    this.isLaunching = false;
     if (this.stage) {
-      let pipes = this.stage.children
+      let pipes = this.stage.children;
       pipes.forEach((pipe) => {
-        pipe.children.length = 0
-        pipe.status = 'idle'
+        pipe.children.length = 0;
+        pipe.status = 'idle';
       })
     }
   }
@@ -230,13 +230,13 @@ class XlBarrage {
    */
   toggleLaunch (isLaunching) {
     if (!this.stage) {
-      return
+      return;
     }
-    this.isLaunching = isLaunching
+    this.isLaunching = isLaunching;
     if (isLaunching) {
-      window.createjs.Ticker.paused = false
+      window.createjs.Ticker.paused = false;
     } else {
-      window.createjs.Ticker.paused = true
+      window.createjs.Ticker.paused = true;
     }
   }
   /**
@@ -244,14 +244,14 @@ class XlBarrage {
    * @method enableLaunch
    */
   enableLaunch () {
-    this.canLaunch = true
+    this.canLaunch = true;
   }
   /**
    * 不可发射子弹的
    * @method disableLaunch
    */
   disableLaunch () {
-    this.canLaunch = false
+    this.canLaunch = false;
   }
   /**
    * stage对象水平尺寸改变时的子弹位置调整
@@ -260,23 +260,23 @@ class XlBarrage {
    */
   horizontalResize (delta) {
     if (!this.bullets.length) {
-      return
+      return;
     }
-    let canvasWidth = this.canvas.width
-    let pipes = this.stage.children
+    let canvasWidth = this.canvas.width;
+    let pipes = this.stage.children;
     pipes.forEach((pipe) => {
-      let bullets = pipe.children
+      let bullets = pipe.children;
       bullets.forEach((bullet) => {
-        let correct = horizontalCorrect(bullet, canvasWidth, delta)
+        let correct = horizontalCorrect(bullet, canvasWidth, delta);
         window.createjs.Tween.get(bullet, { override: true })
           .to({x: correct.x})
           .wait(0)
           .to({x: -bullet.width}, correct.duration)
           .call(() => {
             pipe.removeChild(bullet)
-          })
-      })
-    })
+          });
+      });
+    });
   }
   // 事件管理
   /**
@@ -284,22 +284,22 @@ class XlBarrage {
    * @method on
    */
   on () {
-    eventManager.on.apply(eventManager, arguments)
+    eventManager.on.apply(eventManager, arguments);
   }
   /**
    * 事件管理之事件注册，只监听一次
    * @method once
    */
   once () {
-    eventManager.once.apply(eventManager, arguments)
+    eventManager.once.apply(eventManager, arguments);
   }
   /**
    * 事件管理之事件分发
    * @method dispatch
    */
   dispatch () {
-    eventManager.dispatch.apply(eventManager, arguments)
+    eventManager.dispatch.apply(eventManager, arguments);
   }
 }
 
-export default XlBarrage
+export default XlBarrage;

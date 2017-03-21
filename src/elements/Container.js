@@ -5,21 +5,12 @@
 
 var Container;
 (function (root) {
-  Container = class {
+  Container = class extends window.createjs.Container {
     constructor () {
+      super();
       this.set({
         tagName: 'CONTAINER'
       });
-    }
-    addChildren () {
-      let args = Array.prototype.slice.call(arguments);
-      if (!args.length) {
-        return;
-      }
-      args.forEach((child) => {
-        this.addChild(child);
-      });
-      this.calcSize();
     }
     calcSize () {
       let selfWidth = 0;
@@ -38,9 +29,17 @@ var Container;
         height: selfHeight
       });
     }
+    addChildren () {
+      let args = Array.prototype.slice.call(arguments);
+      if (!args.length) {
+        return;
+      }
+      args.forEach((child) => {
+        this.addChild(child);
+      });
+      this.calcSize();
+    }
   }
-  root.createjs.extend(Container, root.createjs.Container);
 }) (window);
 
 export default Container;
-

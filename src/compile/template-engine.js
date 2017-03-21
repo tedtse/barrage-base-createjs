@@ -2,12 +2,13 @@
  * 参见 https://segmentfault.com/a/1190000000426283 
  */
 
-export default function tplEngine (tpl, data) {
+export function tplEngine (tpl, data) {
   let reg = /<%([^%>]+)?%>/g;
   let regOut = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g;
   let cursor = 0;
   let code = 'var r = [];\n';
   let match;
+  code += 'var data = ' + JSON.stringify(data) + ';\n';
   let add = function (line, js) {
     if (js) {
       code += line.match(regOut) ? line + '\n' : 'r.push(' + line + ');\n';

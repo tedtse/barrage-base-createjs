@@ -1,7 +1,7 @@
 import eventManager from './utils/event-manager'
-import loadJs from './utils/load-script'
-import { generateBullet } from './compile/convert'
+import { loadJs } from './utils/load-script'
 import { setting, extendSetting } from './setting'
+import { generateBullet } from './compile/convert'
 import Stage from './elements/Stage'
 
 const SPEED = 12;
@@ -66,6 +66,7 @@ class XlBarrage {
    * @param {number} frequence - 发射子弹的频率，是指子弹经过整个stage宽度的百分比，如0.15
    * @param {object} relyOpts - easeljs、tweenjs的路径
    * @param {object} pipeOpts - 子弹通道对象参数
+   * @param {object} templateOpts - 模板对象参数
    */
   constructor (opts) {
     this.bullets = [];
@@ -80,15 +81,15 @@ class XlBarrage {
   initialize () {
     this.stage = new Stage(setting.id);
     this.canvas = document.getElementById(setting.id);
-    if (setting.auto) {
-      this.autoLaunch();
-    }
+    // if (setting.auto) {
+    //   this.autoLaunch();
+    // }
     // 初始化pipes
-    let pipeOpts = Object.assign({ ...defaultPipeOpts, ...setting.pipeOpts, width: this.canvas.width });
-    let pipes = generatePipes(pipeOpts);
-    pipes.forEach((pipe) => {
-      this.stage.addChild(pipe);
-    })
+    // let pipeOpts = Object.assign({ ...defaultPipeOpts, ...setting.pipeOpts, width: this.canvas.width });
+    // let pipes = generatePipes(pipeOpts);
+    // pipes.forEach((pipe) => {
+    //   this.stage.addChild(pipe);
+    // })
   }
   /**
    * 加载完easeljs、tweenjs后的回调函数
@@ -301,5 +302,21 @@ class XlBarrage {
     eventManager.dispatch.apply(eventManager, arguments);
   }
 }
+
+var barrage = new XlBarrage({
+  id: 'barrage-stage',
+  relyOpts: {
+    easeljsPath: '../lib/easeljs-NEXT.min.js',
+    tweenjsPath: '../lib/tweenjs-NEXT.min.js'
+  },
+  tplOpts: {
+    template: require('./bullet.tpl'),
+    styleSheet: require('./bullet-css.js')
+  }
+});
+barrage.ready(() => {
+  let bullet = generateBullet({ type: 'hot', comment: '舅扶你' });
+  barrage.stage.addChild(bullet);
+})
 
 export default XlBarrage;

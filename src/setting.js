@@ -3,11 +3,12 @@ var setting = {
   auto: false,
   frequence: 0.2, 
   relyOpts: {},
-  pipeOpts: {}
+  pipeOpts: {},
+  tplOpts: {}
 };
 
 function extendSetting (opts) {
-  setting = { ...setting, opts };
+  setting = { ...setting, ...opts };
 }
 
-export  { setting, extendSetting }
+export { setting, extendSetting }

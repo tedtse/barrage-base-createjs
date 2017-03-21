@@ -53,19 +53,19 @@ function generateHotIcon (iconSheet) {
 function CodeWrap () {
   TextWrap = function (text, font, color) {
     // 去掉换行
-    text = text.replace(/[\r\n]/g, '')
-    this.Text_constructor(text, font, color)
-    this.hitArea = new window.createjs.Shape()
-    this.textBaseline = 'top'
+    text = text.replace(/[\r\n]/g, '');
+    this.Text_constructor(text, font, color);
+    this.hitArea = new window.createjs.Shape();
+    this.textBaseline = 'top';
 
-    this.addEventListener('rollover', this)
-    this.addEventListener('rollout', this)
+    this.addEventListener('rollover', this);
+    this.addEventListener('rollout', this);
   }
   window.createjs.extend(TextWrap, window.createjs.Text)
   TextWrap.prototype.draw = function (ctx, ignoreCache) {
-    this.Text_draw(ctx, ignoreCache)
-    this.hitArea.graphics.clear().beginFill('#ffffff').drawRect(0, 0, this.getMeasuredWidth(), this.getMeasuredHeight())
+    this.Text_draw(ctx, ignoreCache);
+    this.hitArea.graphics.clear().beginFill('#ffffff').drawRect(0, 0, this.getMeasuredWidth(), this.getMeasuredHeight());
   }
   TextWrap.prototype.handleEvent = function (evt) {}
-  window.createjs.promote(TextWrap, 'Text')
+  window.createjs.promote(TextWrap, 'Text');
 }

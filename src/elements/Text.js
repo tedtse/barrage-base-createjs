@@ -7,6 +7,14 @@ var Text;
 (function (root) {
   Text = class {
     constructor (text, font, color) {
+      // 去掉换行
+      text = text.replace(/[\r\n]/g, '');
+      this.Text_constructor(text, font, color);
+      this.hitArea = new root.createjs.Shape();
+      this.textBaseline = 'top';
+
+      this.addEventListener('rollover', this);
+      this.addEventListener('rollout', this);
       this.set({
         tagName: 'TEXT'
       });

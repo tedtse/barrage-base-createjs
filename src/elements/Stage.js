@@ -5,17 +5,17 @@
 
 var Stage;
 (function (root) {
-  Stage = class {
+  Stage = class extends root.createjs.Stage {
     constructor (id) {
+      super(id);
       this.set({
         tagName: 'STAGE'
       });
       this.enableMouseOver(20);
       root.createjs.Ticker.setFPS(60);
-      root.createjs.Ticker.addEventListener('tick', stage);
+      root.createjs.Ticker.addEventListener('tick', this);
     }
   }
-  root.createjs.extend(Stage, root.createjs.Stage);
 }) (window);
 
 export default Stage;

@@ -1,4 +1,4 @@
-module.exports = {
+export var sheet = {
   '[role="bullet"]': {
   },
   '[role="hot-icon"]': {

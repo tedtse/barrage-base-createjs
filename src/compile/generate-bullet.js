@@ -42,7 +42,7 @@ function iterator (parent) {
     let _children = [];
     children.forEach((child) => {
       let nodeType = child.nodeType;
-      if (nodeType !== 1 && nodeType !== 11) {
+      if (nodeType !== 1) {
         return;
       }
       let _child = iterator(child);
@@ -53,9 +53,23 @@ function iterator (parent) {
   return _parent;
 }
 
-// export function generateBullet (canvasWidth, data) {
-export function generateBullet (data) {
-  let tpl = tplEngine(setting.tplOpts.template, data);
-  let xmlDoc = loadXML(tpl);
-  return iterator(xmlDoc.firstChild);
+export function generateBullet (canvasWidth, data) {
+  return new Promise((resolve, reject) => {
+    let tpl = tplEngine(setting.tplOpts.template, data);
+    let xmlDoc = loadXML(tpl);
+    let bullet = iterator(xmlDoc.firstChild);
+    bullet.set({
+      name: 'bullet',
+      x: canvasWidth,
+      y: 0
+    });
+    resolve(bullet);
+  });
+}
+
+export function extendGenerateBullet (newFunc) {
+  if (typeof newFunc !== 'function') {
+    return;
+  }
+  generateBullet = newFunc;
 }

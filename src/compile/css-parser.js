@@ -1,7 +1,7 @@
 import { trim } from '../utils/tool';
 import { matchExpr } from '../utils/selector';
+import { sheet } from '../bullet-css';
 
-var sheet = require('../bullet-css');
 var stylesById = {};
 var stylesByClass = {};
 var stylesByTag = {};

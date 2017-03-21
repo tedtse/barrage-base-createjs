@@ -1,11 +1,10 @@
 import eventManager from './utils/event-manager'
 import { loadJs } from './utils/load-script'
 import { setting, extendSetting } from './setting'
-import { generateBullet } from './compile/convert'
-import Stage from './elements/Stage'
 
 const SPEED = 12;
-var defaultPipeOpts = { height: 0, marginTop: 0, marginBottom: 0 };
+var generateBullet;
+var generatePipes;
 
 function watchPipeStatus (pipe, canvasWidth, frequence) {
   let bullets = pipe.children;
@@ -35,22 +34,11 @@ function horizontalCorrect (bullet, canvasWidth, delta) {
   };
 }
 
-function generatePipes (opts) {
-  let result = [];
-  for (let i = 0; i < opts.number; i++) {
-    let pipe = new window.createjs.Container();
-    pipe.set({
-      id: i,
-      name: 'pipe',
-      status: 'idle',
-      width: opts.width,
-      height: opts.height,
-      x: 0,
-      y: i * opts.height + (i + 1) * opts.marginTop + (Math.max(0, (i - 1))) * opts.marginBottom
-    });
-    result.push(pipe);
-  }
-  return result;
+function readyGo (barrage) {
+  var initialize = require('./initialize');
+  initialize.init(barrage);
+  generatePipes = initialize.generatePipes;
+  generateBullet = initialize.generateBullet;
 }
 
 /**
@@ -75,29 +63,12 @@ class XlBarrage {
     extendSetting(opts);
   }
   /**
-   * 初始化，在ready的回调中调用
-   * @method initialize
-   */
-  initialize () {
-    this.stage = new Stage(setting.id);
-    this.canvas = document.getElementById(setting.id);
-    // if (setting.auto) {
-    //   this.autoLaunch();
-    // }
-    // 初始化pipes
-    // let pipeOpts = Object.assign({ ...defaultPipeOpts, ...setting.pipeOpts, width: this.canvas.width });
-    // let pipes = generatePipes(pipeOpts);
-    // pipes.forEach((pipe) => {
-    //   this.stage.addChild(pipe);
-    // })
-  }
-  /**
    * 加载完easeljs、tweenjs后的回调函数
    * @method ready
    */
   ready (callback) {
     if (window.createjs) {
-      this.initialize();
+      readyGo(this);
       callback();
     }
     let relyOpts = setting.relyOpts;
@@ -112,7 +83,7 @@ class XlBarrage {
         throw Error('load the script tweenjs failed!');
       })
       .then(() => {
-        this.initialize();
+        readyGo(this);
         callback();
       })
   }
@@ -171,6 +142,18 @@ class XlBarrage {
    */
   launch (data, pipe) {
     let canvasWidth = this.canvas.width;
+    if (!pipe) {
+      let pipes = this.stage.children;
+      pipes.forEach((_pipe) => {
+        try {
+          watchPipeStatus(_pipe, this.canvas.width, setting.frequence);
+          if (_pipe.status === 'idle') {
+            pipe = _pipe;
+            throw Error('abort now');
+          }
+        } catch (e) {}
+      })
+    }
     generateBullet(canvasWidth, data)
       .then((bullet) => {
         let duration = ~~((canvasWidth + bullet.width) * SPEED);
@@ -181,7 +164,7 @@ class XlBarrage {
           .to({x: -bullet.width}, duration)
           .call(() => {
             pipe.removeChild(bullet);
-          })
+          });
         this.dispatch('barrage.bulletLaunch');
       })
   }
@@ -270,9 +253,9 @@ class XlBarrage {
       bullets.forEach((bullet) => {
         let correct = horizontalCorrect(bullet, canvasWidth, delta);
         window.createjs.Tween.get(bullet, { override: true })
-          .to({x: correct.x})
+          .to({ x: correct.x })
           .wait(0)
-          .to({x: -bullet.width}, correct.duration)
+          .to({ x: -bullet.width }, correct.duration)
           .call(() => {
             pipe.removeChild(bullet)
           });
@@ -315,8 +298,7 @@ var barrage = new XlBarrage({
   }
 });
 barrage.ready(() => {
-  let bullet = generateBullet({ type: 'hot', comment: '舅扶你' });
-  barrage.stage.addChild(bullet);
+  barrage.launch({ type: 'hot', comment: '舅扶你' })
 })
 
 export default XlBarrage;

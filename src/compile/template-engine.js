@@ -8,7 +8,9 @@ export function tplEngine (tpl, data) {
   let cursor = 0;
   let code = 'var r = [];\n';
   let match;
-  code += 'var data = ' + JSON.stringify(data) + ';\n';
+  for (let key in data) {
+    code += 'var ' + key + ' =' + JSON.stringify(data[key]) + ';\n';
+  }
   let add = function (line, js) {
     if (js) {
       code += line.match(regOut) ? line + '\n' : 'r.push(' + line + ');\n';

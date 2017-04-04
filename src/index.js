@@ -1,13 +1,13 @@
-import eventManager from './utils/event-manager'
-import { loadJs } from './utils/load-script'
-import { setting, extendSetting } from './setting'
+import eventManager from './utils/event-manager';
+import { loadJs } from './utils/load-script';
+import { setting, extendSetting } from './setting';
+import { STAGE, CANVAS, generateBullet } from './feature';
 
 const SPEED = 12;
-var generateBullet;
-var generatePipes;
 
-function watchPipeStatus (pipe, canvasWidth, frequence) {
+function watchPipeStatus (pipe, frequence) {
   let bullets = pipe.children;
+  let canvasWidth = CANVAS.width;
   let result = true;
   for (let i = bullets.length; i--;) {
     let bullet = bullets[i];
@@ -23,7 +23,8 @@ function watchPipeStatus (pipe, canvasWidth, frequence) {
 }
 
 // 子弹元素位置校正
-function horizontalCorrect (bullet, canvasWidth, delta) {
+function horizontalCorrect (bullet, delta) {
+  let canvasWidth = CANVAS.width;
   let width = bullet.width;
   let oldX = bullet.x;
   let newX = ~~(oldX * (width + canvasWidth) / (width + canvasWidth - delta));
@@ -34,11 +35,8 @@ function horizontalCorrect (bullet, canvasWidth, delta) {
   };
 }
 
-function readyGo (barrage) {
-  var initialize = require('./initialize');
-  initialize.init(barrage);
-  generatePipes = initialize.generatePipes;
-  generateBullet = initialize.generateBullet;
+function initialize (barrage) {
+  require('./initialize')(barrage);
 }
 
 /**
@@ -53,7 +51,6 @@ class XlBarrage {
    * @param {boolean} auto - 是否自动发射子弹，默认为false
    * @param {number} frequence - 发射子弹的频率，是指子弹经过整个stage宽度的百分比，如0.15
    * @param {object} relyOpts - easeljs、tweenjs的路径
-   * @param {object} pipeOpts - 子弹通道对象参数
    * @param {object} templateOpts - 模板对象参数
    */
   constructor (opts) {
@@ -68,7 +65,7 @@ class XlBarrage {
    */
   ready (callback) {
     if (window.createjs) {
-      readyGo(this);
+      initialize(this);
       callback();
     }
     let relyOpts = setting.relyOpts;
@@ -83,7 +80,7 @@ class XlBarrage {
         throw Error('load the script tweenjs failed!');
       })
       .then(() => {
-        readyGo(this);
+        initialize(this);
         callback();
       })
   }
@@ -119,8 +116,8 @@ class XlBarrage {
    */
   clearBullets () {
     this.bullets.length = 0;
-    if (this.stage) {
-      let pipes = this.stage.children;
+    if (STAGE) {
+      let pipes = STAGE.children;
       pipes.forEach((pipe) => {
         pipe.children.length = 0;
         pipe.status = 'idle';
@@ -141,12 +138,11 @@ class XlBarrage {
    * @param {object} data - 要发射的子弹实例的数据
    */
   launch (data, pipe) {
-    let canvasWidth = this.canvas.width;
     if (!pipe) {
-      let pipes = this.stage.children;
+      let pipes = STAGE.children;
       pipes.forEach((_pipe) => {
         try {
-          watchPipeStatus(_pipe, this.canvas.width, setting.frequence);
+          watchPipeStatus(_pipe, setting.frequence);
           if (_pipe.status === 'idle') {
             pipe = _pipe;
             throw Error('abort now');
@@ -154,9 +150,9 @@ class XlBarrage {
         } catch (e) {}
       })
     }
-    generateBullet(canvasWidth, data)
+    generateBullet(data)
       .then((bullet) => {
-        let duration = ~~((canvasWidth + bullet.width) * SPEED);
+        let duration = ~~((CANVAS.width + bullet.width) * SPEED);
         pipe.addChild(bullet);
         pipe.status = 'block';
         window.createjs.Tween.get(bullet)
@@ -178,9 +174,9 @@ class XlBarrage {
       if (!that.canLaunch || !that.isLaunching || !that.bullets.length) {
         return;
       }
-      let pipes = that.stage.children;
+      let pipes = STAGE.children;
       pipes.forEach((pipe) => {
-        watchPipeStatus(pipe, that.canvas.width, setting.frequence);
+        watchPipeStatus(pipe, setting.frequence);
         if (pipe.status === 'idle' && that.bullets.length) {
           that.launch(that.bullets.shift(), pipe);
         }
@@ -200,8 +196,8 @@ class XlBarrage {
    */
   stopLaunch () {
     this.isLaunching = false;
-    if (this.stage) {
-      let pipes = this.stage.children;
+    if (STAGE) {
+      let pipes = STAGE.children;
       pipes.forEach((pipe) => {
         pipe.children.length = 0;
         pipe.status = 'idle';
@@ -213,7 +209,7 @@ class XlBarrage {
    * @method toggleLaunch
    */
   toggleLaunch (isLaunching) {
-    if (!this.stage) {
+    if (!STAGE) {
       return;
     }
     this.isLaunching = isLaunching;
@@ -246,12 +242,11 @@ class XlBarrage {
     if (!this.bullets.length) {
       return;
     }
-    let canvasWidth = this.canvas.width;
-    let pipes = this.stage.children;
+    let pipes = STAGE.children;
     pipes.forEach((pipe) => {
       let bullets = pipe.children;
       bullets.forEach((bullet) => {
-        let correct = horizontalCorrect(bullet, canvasWidth, delta);
+        let correct = horizontalCorrect(bullet, CANVAS.width, delta);
         window.createjs.Tween.get(bullet, { override: true })
           .to({ x: correct.x })
           .wait(0)
@@ -288,6 +283,8 @@ class XlBarrage {
 
 var barrage = new XlBarrage({
   id: 'barrage-stage',
+  auto: true,
+  frequence: 0.1,
   relyOpts: {
     easeljsPath: '../lib/easeljs-NEXT.min.js',
     tweenjsPath: '../lib/tweenjs-NEXT.min.js'
@@ -298,7 +295,15 @@ var barrage = new XlBarrage({
   }
 });
 barrage.ready(() => {
-  barrage.launch({ type: 'hot', comment: '舅扶你' })
-})
+  let datas = [
+    { type: 'new', comment: '蛤蛤蛤，居然有这等奇葩' },
+    { type: 'hot', comment: '舅扶你' },
+    { type: 'new', comment: '就差1亿！王健林险胜李嘉诚夺华人首富 马云差距拉大' },
+    { type: 'new', comment: '666' },
+    { type: 'hot', comment: '外行看热闹，内行看门道' },
+    { type: 'new', comment: '红色特别版iPhone是对中国消费者的一种谄媚吗' }
+  ];
+  barrage.fillBullets(datas);
+});
 
 export default XlBarrage;

@@ -1,7 +1,7 @@
 <container role="bullet">
-    <% if (data.type === "hot") { %>
-        <text role="hot-comment"><% data.comment %></text>
+    <% if (type === "hot") { %>
+        <text role="hot-comment"><% comment %></text>
     <% } else { %>
-        <text role="new-comment"><% data.comment %></text>
+        <text role="new-comment"><% comment %></text>
     <% } %>
 </container>

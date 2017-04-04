@@ -1,23 +1,19 @@
 import Stage from './elements/Stage'
-import { generatePipes } from './compile/generate-pipes'
-import { generateBullet } from './compile/generate-bullet'
+import { _generatePipes } from './compile/generate-pipes'
+import { _generateBullet } from './compile/generate-bullet'
 import { setting } from './setting'
+import { STAGE, setStage, setCanvas, setGenerateBullet, setGeneratePipes, generatePipes } from './feature';
 
-var defaultPipeOpts = { height: 0, marginTop: 10, marginBottom: 15, number: 2 };
-module.exports = {
-  init (barrage) {
-    barrage.stage = new Stage(setting.id);
-    barrage.canvas = document.getElementById(setting.id);
-    if (setting.auto) {
-      barrage.autoLaunch();
-    }
-    // 初始化pipes
-    let pipeOpts = Object.assign({ ...defaultPipeOpts, ...setting.pipeOpts, width: barrage.canvas.width });
-    let pipes = generatePipes(pipeOpts);
-    pipes.forEach((pipe) => {
-      barrage.stage.addChild(pipe);
-    })
-  },
-  generatePipes: generatePipes,
-  generateBullet: generateBullet
+module.exports = function (barrage) {
+  setStage(new Stage(setting.id));
+  setCanvas(document.getElementById(setting.id));
+  setGenerateBullet(_generateBullet);
+  setGeneratePipes(_generatePipes);
+  let pipes = generatePipes();
+  pipes.forEach((pipe) => {
+    STAGE.addChild(pipe);
+  });
+  if (setting.auto) {
+    barrage.autoLaunch();
+  }
 }

@@ -1,7 +1,10 @@
 import Container from '../elements/Container';
+import { CANVAS } from '../feature';
 
-export function generatePipes (opts) {
+var defaultPipeOpts = { height: 15, marginTop: 15, marginBottom: 0, number: 2 };
+export function _generatePipes () {
   let result = [];
+  let opts = Object.assign({ ...defaultPipeOpts, width: CANVAS.width });
   for (let i = 0; i < opts.number; i++) {
     let pipe = new window.createjs.Container();
     pipe.set({

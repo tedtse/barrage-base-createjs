@@ -3,7 +3,6 @@ export var setting = {
   auto: false,
   frequence: 0.2, 
   relyOpts: {},
-  pipeOpts: {},
   tplOpts: {}
 };
 

@@ -1,1 +1,2 @@
-弹幕组件
+# barrage-based-createjs
+barrage base createjs
